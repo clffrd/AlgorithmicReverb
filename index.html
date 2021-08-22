@@ -50,7 +50,7 @@
         cursor: pointer;
         -webkit-appearance: none;
       }
-      .space{margin-top: 300px;}
+      .space{margin-top: 100px;}
     </style>
     <meta charset='utf-8'>
     <title> Hello Web Audio
@@ -74,7 +74,25 @@
         <label for= "decay"> DECAY </label>
         <br>
         <br>
-    <input type="range" id="decay" min="5000" max="100000" />
+    <input type="range" id="decay" min="0.1" max="30" />
+  </div>
+  <div>
+        <label for= "damping"> DAMPING </label>
+        <br>
+        <br>
+    <input type="range" id="damping" min="0" max="100" />
+  </div>
+  <div>
+        <label for= "stereospread"> SPREAD </label>
+        <br>
+        <br>
+    <input type="range" id="stereospread" min="0" max="100" />
+  </div>
+  <div>
+        <label for= "x"> SIZE </label>
+        <br>
+        <br>
+    <input type="range" id="x" min="0" max="100" />
   </div>
 </section>
 <script src="../index.js"></script>

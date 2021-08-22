@@ -4,17 +4,28 @@ audioCtx.suspend();
 
 let flg = true;
 let oscillator;
-let gain = audioCtx.createGain();
-let oscGain = audioCtx.createGain();
-let combGain = audioCtx.createGain();
+let gainL = audioCtx.createGain();
+let gainR = audioCtx.createGain();
+let dryGainL = audioCtx.createGain();
+let dryGainR = audioCtx.createGain();
+let combGainL1 = audioCtx.createGain();
+let combGainR1 = audioCtx.createGain();
+let combGainL2 = audioCtx.createGain();
+let combGainR2 = audioCtx.createGain();
+let wetGain1 = audioCtx.createGain();
+let wetGain2 = audioCtx.createGain();
+let outGainL = audioCtx.createGain();
+let outGainR = audioCtx.createGain();
 let comb = [];
 let allpass = [];
-let loopgains = [0.773,0.802,0.753,0.733]
-let combdelaytimes = [1687, 1601, 2053, 2251]
 let aploopgain = 0.7
 let demo;
 let playback;
 let  music;
+let scaling = 1
+let stereoSpread = 23;
+let splitter = audioCtx.createChannelSplitter(2);
+let merger = audioCtx.createChannelMerger(2)
 demo  = "../assets/audio.mp3"
 
 function defaultfileloader(file)
@@ -36,9 +47,14 @@ function defaultfileloader(file)
 
 defaultfileloader(demo);
 
-let apdelaytimes = [347,113,37]
-combGain.gain.value = 1;
-oscGain.gain.value = 1;
+combGainL1.gain.value = 0.1;
+combGainR1.gain.value = 0.1;
+combGainL2.gain.value = 0.1;
+combGainR2.gain.value = 0.1;
+gainL.gain.value = 0.1;
+gainR.gain.value = 0.1;
+outGainL.gain.value = 1;
+outGainR.gain.value = 1;
 function buttonClicked()
 {
 var element =   document.getElementById('play')
@@ -47,17 +63,19 @@ if(flg)
   music = audioCtx.createBufferSource();
   music.buffer = playback.buffer;
   music.start();
-  music.connect(gain)
+  music.connect(splitter)
   element.innerHTML = "STOP";
-  gain.gain.value = 0.1;
+  outGainL.gain.value = 1;
+  outGainR.gain.value = 1;
   flg = false;
   audioCtx.resume();
 }
 else
 {
   music.stop();
-  music.disconnect(gain)
-  gain.gain.value = 1;
+  music.disconnect(splitter)
+  outGainL.gain.value = 0;
+  outGainR.gain.value = 0;
   audioCtx.suspend();
   element.innerHTML = "PLAY";
   flg = true;
@@ -66,56 +84,178 @@ else
 
 var decay = document.getElementById('decay');
 var reverb = document.getElementById('drywet');
+var damping = document.getElementById('damping');
+let spread = document.getElementById('stereospread');
+var x = document.getElementById('x');
 decay.addEventListener('input', decayInput, false)
 reverb.addEventListener('input', drywetInput, false)
+damping.addEventListener('input', setDamping, false)
+spread.addEventListener('input', decayInput, false)
+x.addEventListener('input', setx, false)
 function decayInput()
 {
-  setAllpassDelay();
+  scaling = decay.value;
+  stereoSpread = spread.value;
+  setDelaysL();
+  setDelaysR();
 }
-function setAllpassDelay()
+function setDelaysL()
 {
-  for(var i = 0; i<3; i++)
-  {
-    allpass[i].parameters.get('n').value= parseInt((decay.value/Math.pow(3,i))/48);
-  }
-    combdelaytimes[1] = (decay.value/10)
-    combdelaytimes[0] = 1.04996876952*(decay.value/10)
-    combdelaytimes[2] = 1.28232354778*(decay.value/10)
-    combdelaytimes[3] = 1.40599625234*(decay.value/10)
-    comb[0].parameters.get('n').value= parseInt(combdelaytimes[0]);
-    comb[1].parameters.get('n').value= parseInt(combdelaytimes[1]);
-    comb[2].parameters.get('n').value= parseInt(combdelaytimes[2]);
-    comb[3].parameters.get('n').value= parseInt(combdelaytimes[3]);
+    comb[0].parameters.get('n').value= parseInt(1557 * scaling)//parseInt(combdelaytimes[0]/48);
+    comb[1].parameters.get('n').value= parseInt(1617 * scaling)//parseInt(combdelaytimes[1]/48);
+    comb[2].parameters.get('n').value= parseInt(1491 * scaling)//parseInt(combdelaytimes[2]/48);
+    comb[3].parameters.get('n').value= parseInt(1422 * scaling)//parseInt(combdelaytimes[3]/48);
+    comb[4].parameters.get('n').value= parseInt(1277 * scaling)//parseInt(combdelaytimes[0]/48);
+    comb[5].parameters.get('n').value= parseInt(1356 * scaling)//parseInt(combdelaytimes[1]/48);
+    comb[6].parameters.get('n').value= parseInt(1188 * scaling)//parseInt(combdelaytimes[2]/48);
+    comb[7].parameters.get('n').value= parseInt(1116 * scaling)//parseInt(combdelaytimes[3]/48);
+    allpass[0].parameters.get('n').value= parseInt(225 * scaling);
+    allpass[1].parameters.get('n').value= parseInt(556 * scaling);
+    allpass[2].parameters.get('n').value= parseInt(441 * scaling);
+    allpass[3].parameters.get('n').value= parseInt(341 * scaling);
 }
+
+function setDelaysR()
+{
+    comb[8].parameters.get('n').value=parseInt( 1557 * scaling) + stereoSpread;
+    comb[9].parameters.get('n').value= parseInt(1617 * scaling) + stereoSpread;
+    comb[10].parameters.get('n').value= parseInt(1491 * scaling) + stereoSpread;
+    comb[11].parameters.get('n').value= parseInt(1422 * scaling) + stereoSpread;
+    comb[12].parameters.get('n').value= parseInt(1277 * scaling) + stereoSpread;
+    comb[13].parameters.get('n').value= parseInt(1356 * scaling) + stereoSpread;
+    comb[14].parameters.get('n').value= parseInt(1188 * scaling) + stereoSpread;
+    comb[15].parameters.get('n').value= parseInt(1116 * scaling) + stereoSpread;
+    allpass[4].parameters.get('n').value= parseInt(225 * scaling) + stereoSpread;
+    allpass[5].parameters.get('n').value= parseInt(556 * scaling) + stereoSpread;
+    allpass[6].parameters.get('n').value= parseInt(441 * scaling) + stereoSpread;
+    allpass[7].parameters.get('n').value= parseInt(341 * scaling) + stereoSpread;
+}
+function setx()
+{
+  allpass[0].parameters.get('x').value= x.value/100;
+  allpass[1].parameters.get('x').value= x.value/100;
+  allpass[2].parameters.get('x').value= x.value/100;
+  allpass[3].parameters.get('x').value= x.value/100;
+  allpass[4].parameters.get('x').value= x.value/100;
+  allpass[5].parameters.get('x').value= x.value/100;
+  allpass[6].parameters.get('x').value= x.value/100;
+  allpass[7].parameters.get('x').value= x.value/100;
+}
+function setDamping()
+{
+  comb[0].parameters.get('damping').value=damping.value/100;
+  comb[1].parameters.get('damping').value=damping.value/100;
+  comb[2].parameters.get('damping').value=damping.value/100;
+  comb[3].parameters.get('damping').value=damping.value/100;
+  comb[4].parameters.get('damping').value=damping.value/100;
+  comb[5].parameters.get('damping').value=damping.value/100;
+  comb[6].parameters.get('damping').value=damping.value/100;
+  comb[7].parameters.get('damping').value=damping.value/100;
+  comb[8].parameters.get('damping').value=damping.value/100;
+  comb[9].parameters.get('damping').value=damping.value/100;
+  comb[10].parameters.get('damping').value=damping.value/100;
+  comb[11].parameters.get('damping').value=damping.value/100;
+  comb[12].parameters.get('damping').value=damping.value/100;
+  comb[13].parameters.get('damping').value=damping.value/100;
+  comb[14].parameters.get('damping').value=damping.value/100;
+  comb[15].parameters.get('damping').value=damping.value/100;
+}
+
+function setsize()
+{
+  comb[0].parameters.get('size').value=size.value/100;
+  comb[1].parameters.get('size').value=size.value/100;
+  comb[2].parameters.get('size').value=size.value/100;
+  comb[3].parameters.get('size').value=size.value/100;
+  comb[4].parameters.get('size').value=size.value/100;
+  comb[5].parameters.get('size').value=size.value/100;
+  comb[6].parameters.get('size').value=size.value/100;
+  comb[7].parameters.get('size').value=size.value/100;
+  comb[8].parameters.get('size').value=size.value/100;
+  comb[9].parameters.get('size').value=size.value/100;
+  comb[10].parameters.get('size').value=size.value/100;
+  comb[11].parameters.get('size').value=size.value/100;
+  comb[12].parameters.get('size').value=size.value/100;
+  comb[13].parameters.get('size').value=size.value/100;
+  comb[14].parameters.get('size').value=size.value/100;
+  comb[15].parameters.get('size').value=size.value/100;
+}
+
+
+
 
 function drywetInput()
 {
-  combGain.gain.value = reverb.value/100
-  oscGain.gain.value = 1 - reverb.value/100
+  wetGain1.gain.value = reverb.value/100
+  wetGain2.gain.value = reverb.value/100
+  dryGainL.gain.value = 1 - reverb.value/100
+  dryGainR.gain.value = 1 - reverb.value/100
 }
 
 Promise.all([audioCtx.audioWorklet.addModule('../ReverbWorklets.js')]).then(() => {
-  for (var i = 0; i<4; i++)
+  for (var i = 0; i<16; i++)
   {
-    comb[i] = new AudioWorkletNode(audioCtx, 'comb-filter', {parameterData:{loopgain:loopgains[i], n:(combdelaytimes[i])}});
+    comb[i] = new AudioWorkletNode(audioCtx, 'lowpass-comb-filter');
   }
-  for (var i = 0; i<3; i++)
+  for (var i = 0; i<8; i++)
   {
-    allpass[i] = new AudioWorkletNode(audioCtx, 'allpass-filter', {parameterData:{loopgain:aploopgain, n:(apdelaytimes[i])}});
+    allpass[i] = new AudioWorkletNode(audioCtx, 'allpass-filter');
   }
-
-  gain.connect(oscGain)
-  gain.connect(allpass[0])
-      .connect(allpass[1])
-      .connect(allpass[2])
-  allpass[2].connect(comb[0])
-  allpass[2].connect(comb[1])
-  allpass[2].connect(comb[2])
-  allpass[2].connect(comb[3])
-  comb[0].connect(combGain)
-  comb[1].connect(combGain)
-  comb[2].connect(combGain)
-  comb[3].connect(combGain)
-  combGain.connect(audioCtx.destination)
-  oscGain.connect(audioCtx.destination)
+  setDelaysL();
+  setDelaysR();
+  splitter.connect(gainL, 0, 0)
+  gainL.connect(dryGainL)
+  splitter.connect(gainR, 1, 0)
+  gainR.connect(dryGainR)
+  gainL.connect(comb[0])
+    gainL.connect(comb[1])
+      gainL.connect(comb[2])
+        gainL.connect(comb[3])
+        gainL.connect(comb[4])
+          gainL.connect(comb[5])
+            gainL.connect(comb[6])
+              gainL.connect(comb[7])
+  comb[0].connect(combGainL1)
+    comb[1].connect(combGainL1)
+      comb[2].connect(combGainL1)
+        comb[3].connect(combGainL1)
+        comb[4].connect(combGainL2)
+          comb[5].connect(combGainL2)
+            comb[6].connect(combGainL2)
+              comb[7].connect(combGainL2)
+        combGainL1.connect(allpass[0])
+        combGainL2.connect(allpass[0])
+        allpass[0].connect(allpass[1])
+        allpass[1].connect(allpass[2])
+        allpass[2].connect(allpass[3])
+        allpass[3].connect(wetGain1)
+        gainR.connect(comb[8])
+          gainR.connect(comb[9])
+            gainR.connect(comb[10])
+              gainR.connect(comb[11])
+              gainR.connect(comb[12])
+                gainR.connect(comb[13])
+                  gainR.connect(comb[14])
+                    gainR.connect(comb[15])
+        comb[8].connect(combGainR1)
+          comb[9].connect(combGainR1)
+            comb[10].connect(combGainR1)
+              comb[11].connect(combGainR1)
+              comb[12].connect(combGainR2)
+                comb[13].connect(combGainR2)
+                  comb[14].connect(combGainR2)
+                    comb[15].connect(combGainR2)
+              combGainR1.connect(allpass[4])
+              combGainR2.connect(allpass[4])
+              allpass[4].connect(allpass[5])
+              allpass[5].connect(allpass[6])
+              allpass[6].connect(allpass[7])
+              allpass[7].connect(wetGain2)
+              wetGain1.connect(outGainL)
+              wetGain2.connect(outGainR)
+              dryGainL.connect(outGainL)
+              dryGainR.connect(outGainR)
+              outGainL.connect(merger, 0, 0);
+              outGainR.connect(merger, 0, 1);
+              merger.connect(audioCtx.destination)
 })
