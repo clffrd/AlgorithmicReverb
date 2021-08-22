@@ -24,6 +24,7 @@ let playback;
 let  music;
 let scaling = 1
 let stereoSpread = 23;
+let preDelay =0;  preDelayC = 0;
 let splitter = audioCtx.createChannelSplitter(2);
 let merger = audioCtx.createChannelMerger(2)
 demo  = "../assets/audio.mp3"
@@ -84,51 +85,48 @@ else
 
 var decay = document.getElementById('decay');
 var reverb = document.getElementById('drywet');
-var damping = document.getElementById('damping');
-let spread = document.getElementById('stereospread');
+var damping = document.getElementById('size');
 var x = document.getElementById('x');
 decay.addEventListener('input', decayInput, false)
-reverb.addEventListener('input', drywetInput, false)
-damping.addEventListener('input', setDamping, false)
-spread.addEventListener('input', decayInput, false)
+damping.addEventListener('input', setsize, false)
 x.addEventListener('input', setx, false)
 function decayInput()
 {
-  scaling = decay.value;
-  stereoSpread = spread.value;
+  scaling = decay.value/5;
   setDelaysL();
   setDelaysR();
 }
 function setDelaysL()
 {
-    comb[0].parameters.get('n').value= parseInt(1557 * scaling)//parseInt(combdelaytimes[0]/48);
-    comb[1].parameters.get('n').value= parseInt(1617 * scaling)//parseInt(combdelaytimes[1]/48);
-    comb[2].parameters.get('n').value= parseInt(1491 * scaling)//parseInt(combdelaytimes[2]/48);
-    comb[3].parameters.get('n').value= parseInt(1422 * scaling)//parseInt(combdelaytimes[3]/48);
-    comb[4].parameters.get('n').value= parseInt(1277 * scaling)//parseInt(combdelaytimes[0]/48);
-    comb[5].parameters.get('n').value= parseInt(1356 * scaling)//parseInt(combdelaytimes[1]/48);
-    comb[6].parameters.get('n').value= parseInt(1188 * scaling)//parseInt(combdelaytimes[2]/48);
-    comb[7].parameters.get('n').value= parseInt(1116 * scaling)//parseInt(combdelaytimes[3]/48);
-    allpass[0].parameters.get('n').value= parseInt(225 * scaling);
-    allpass[1].parameters.get('n').value= parseInt(556 * scaling);
-    allpass[2].parameters.get('n').value= parseInt(441 * scaling);
-    allpass[3].parameters.get('n').value= parseInt(341 * scaling);
+    console.log( parseInt((1557  - preDelayC) * scaling));
+    comb[0].parameters.get('n').value= parseInt((1557 ) * scaling);
+    comb[1].parameters.get('n').value= parseInt((1617) * scaling);
+    comb[2].parameters.get('n').value= parseInt((1491) * scaling);
+    comb[3].parameters.get('n').value= parseInt((1422) * scaling);
+    comb[4].parameters.get('n').value= parseInt((1277) * scaling);
+    comb[5].parameters.get('n').value= parseInt((1356) * scaling);
+    comb[6].parameters.get('n').value= parseInt((1188) * scaling);
+    comb[7].parameters.get('n').value= parseInt((1116) * scaling);
+    allpass[0].parameters.get('n').value= parseInt((225) * scaling);
+    allpass[1].parameters.get('n').value= parseInt((556) * scaling);
+    allpass[2].parameters.get('n').value= parseInt((441) * scaling);
+    allpass[3].parameters.get('n').value= parseInt((341) * scaling);
 }
 
 function setDelaysR()
 {
-    comb[8].parameters.get('n').value=parseInt( 1557 * scaling) + stereoSpread;
-    comb[9].parameters.get('n').value= parseInt(1617 * scaling) + stereoSpread;
-    comb[10].parameters.get('n').value= parseInt(1491 * scaling) + stereoSpread;
-    comb[11].parameters.get('n').value= parseInt(1422 * scaling) + stereoSpread;
-    comb[12].parameters.get('n').value= parseInt(1277 * scaling) + stereoSpread;
-    comb[13].parameters.get('n').value= parseInt(1356 * scaling) + stereoSpread;
-    comb[14].parameters.get('n').value= parseInt(1188 * scaling) + stereoSpread;
-    comb[15].parameters.get('n').value= parseInt(1116 * scaling) + stereoSpread;
-    allpass[4].parameters.get('n').value= parseInt(225 * scaling) + stereoSpread;
-    allpass[5].parameters.get('n').value= parseInt(556 * scaling) + stereoSpread;
-    allpass[6].parameters.get('n').value= parseInt(441 * scaling) + stereoSpread;
-    allpass[7].parameters.get('n').value= parseInt(341 * scaling) + stereoSpread;
+    comb[8].parameters.get('n').value=parseInt(( 1557) * scaling);
+    comb[9].parameters.get('n').value= parseInt((1617) * scaling);
+    comb[10].parameters.get('n').value= parseInt((1491) * scaling);
+    comb[11].parameters.get('n').value= parseInt((1422) * scaling);
+    comb[12].parameters.get('n').value= parseInt((1277) * scaling);
+    comb[13].parameters.get('n').value= parseInt((1356) * scaling);
+    comb[14].parameters.get('n').value= parseInt((1188) * scaling);
+    comb[15].parameters.get('n').value= parseInt((1116) * scaling);
+    allpass[4].parameters.get('n').value= parseInt((225) * scaling);
+    allpass[5].parameters.get('n').value= parseInt((556) * scaling);
+    allpass[6].parameters.get('n').value= parseInt((441) * scaling);
+    allpass[7].parameters.get('n').value= parseInt((341) * scaling);
 }
 function setx()
 {

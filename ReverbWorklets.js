@@ -22,8 +22,8 @@ registerProcessor('lowpass-comb-filter', class extends AudioWorkletProcessor {
       for (let n=0; n<outputChannel.length; ++n) { //over 128 samples
         // Now update the values
         this.x[c][this.readPointer] = inputChannel[n]
-        this.y[c][this.readPointer]  = this.x[c][(((this.readPointer - parameters.n[0])%192000)+192000)%192000] + (this.lowpass[c][0])*this.y[c][(((this.readPointer - parameters.n[0])%192000)+192000)%192000]//0.94*(this.x[c][this.readPointer]*(1 - 0.9) + 0.9*this.y[c][(((this.readPointer-1)%4800)+4800)%4800]);
-        this.lowpass[c][0] = parameters.size[0]*(1 - parameters.damping[0])*this.y[c][this.readPointer] - parameters.damping[0]*this.prev[c][0];
+        this.y[c][this.readPointer]  = parameters.size[0]*(this.x[c][(((this.readPointer - parameters.n[0])%192000)+192000)%192000] + (this.lowpass[c][0])*this.y[c][(((this.readPointer - parameters.n[0])%192000)+192000)%192000]);//0.94*(this.x[c][this.readPointer]*(1 - 0.9) + 0.9*this.y[c][(((this.readPointer-1)%4800)+4800)%4800]);
+        this.lowpass[c][0] = (1 - parameters.damping[0])*this.y[c][this.readPointer] + parameters.damping[0]*this.prev[c][0];
         this.prev[c][0] = this.lowpass[c][0];
         outputChannel[n] = this.y[c][this.readPointer] //this.y[c][this.readPointer]; //this.y[c][this.readPointer];
         this.readPointer++;
