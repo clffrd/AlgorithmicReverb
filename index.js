@@ -3,11 +3,12 @@ const audioCtx = new AudioContext();
 audioCtx.suspend();
 
 let flg = true;
-let oscillator;
 let gainL = audioCtx.createGain();
 let gainR = audioCtx.createGain();
 let dryGainL = audioCtx.createGain();
 let dryGainR = audioCtx.createGain();
+let tapGain1 = audioCtx.createGain();
+let tapGain2 = audioCtx.createGain();
 let combGainL1 = audioCtx.createGain();
 let combGainR1 = audioCtx.createGain();
 let combGainL2 = audioCtx.createGain();
@@ -18,13 +19,10 @@ let outGainL = audioCtx.createGain();
 let outGainR = audioCtx.createGain();
 let comb = [];
 let allpass = [];
-let aploopgain = 0.7
 let demo;
 let playback;
 let  music;
 let scaling = 1
-let stereoSpread = 23;
-let preDelay =0;  preDelayC = 0;
 let splitter = audioCtx.createChannelSplitter(2);
 let merger = audioCtx.createChannelMerger(2)
 demo  = "../assets/audio.mp3"
@@ -63,6 +61,7 @@ if(flg)
 {
   music = audioCtx.createBufferSource();
   music.buffer = playback.buffer;
+  music.loop = true
   music.start();
   music.connect(splitter)
   element.innerHTML = "STOP";
@@ -87,18 +86,29 @@ var decay = document.getElementById('decay');
 var reverb = document.getElementById('drywet');
 var damping = document.getElementById('size');
 var x = document.getElementById('x');
+var ms = document.getElementById('ms');
 decay.addEventListener('input', decayInput, false)
 damping.addEventListener('input', setsize, false)
+reverb.addEventListener('input',drywetInput, false)
 x.addEventListener('input', setx, false)
+ms.addEventListener('input', setms, false)
 function decayInput()
 {
   scaling = decay.value/5;
   setDelaysL();
   setDelaysR();
 }
+
+function setms()
+{
+  taps.parameters.get('ms').value= parseInt(ms.value*(Math.random()+0.5));
+  taps2.parameters.get('ms').value= parseInt(ms.value*(Math.random()+0.5));
+  taps.parameters.get('n').value= parseInt((341) * scaling);
+  taps2.parameters.get('n').value=parseInt((341) * scaling);
+
+}
 function setDelaysL()
 {
-    console.log( parseInt((1557  - preDelayC) * scaling));
     comb[0].parameters.get('n').value= parseInt((1557 ) * scaling);
     comb[1].parameters.get('n').value= parseInt((1617) * scaling);
     comb[2].parameters.get('n').value= parseInt((1491) * scaling);
@@ -115,7 +125,7 @@ function setDelaysL()
 
 function setDelaysR()
 {
-    comb[8].parameters.get('n').value=parseInt(( 1557) * scaling);
+    comb[8].parameters.get('n').value=parseInt((1557) * scaling);
     comb[9].parameters.get('n').value= parseInt((1617) * scaling);
     comb[10].parameters.get('n').value= parseInt((1491) * scaling);
     comb[11].parameters.get('n').value= parseInt((1422) * scaling);
@@ -130,53 +140,27 @@ function setDelaysR()
 }
 function setx()
 {
-  allpass[0].parameters.get('x').value= x.value/100;
-  allpass[1].parameters.get('x').value= x.value/100;
-  allpass[2].parameters.get('x').value= x.value/100;
-  allpass[3].parameters.get('x').value= x.value/100;
-  allpass[4].parameters.get('x').value= x.value/100;
-  allpass[5].parameters.get('x').value= x.value/100;
-  allpass[6].parameters.get('x').value= x.value/100;
-  allpass[7].parameters.get('x').value= x.value/100;
+  for(var i= 0; i<8; i++)
+  {
+    allpass[i].parameters.get('x').value= x.value/100;
+    taps.parameters.get('x').value=  x.value/100;
+    taps2.parameters.get('x').value= x.value/100;
+  }
 }
 function setDamping()
 {
-  comb[0].parameters.get('damping').value=damping.value/100;
-  comb[1].parameters.get('damping').value=damping.value/100;
-  comb[2].parameters.get('damping').value=damping.value/100;
-  comb[3].parameters.get('damping').value=damping.value/100;
-  comb[4].parameters.get('damping').value=damping.value/100;
-  comb[5].parameters.get('damping').value=damping.value/100;
-  comb[6].parameters.get('damping').value=damping.value/100;
-  comb[7].parameters.get('damping').value=damping.value/100;
-  comb[8].parameters.get('damping').value=damping.value/100;
-  comb[9].parameters.get('damping').value=damping.value/100;
-  comb[10].parameters.get('damping').value=damping.value/100;
-  comb[11].parameters.get('damping').value=damping.value/100;
-  comb[12].parameters.get('damping').value=damping.value/100;
-  comb[13].parameters.get('damping').value=damping.value/100;
-  comb[14].parameters.get('damping').value=damping.value/100;
-  comb[15].parameters.get('damping').value=damping.value/100;
+  for(var i= 0; i<16; i++)
+  {
+  comb[i].parameters.get('damping').value=damping.value/100;
+  }
 }
 
 function setsize()
 {
-  comb[0].parameters.get('size').value=size.value/100;
-  comb[1].parameters.get('size').value=size.value/100;
-  comb[2].parameters.get('size').value=size.value/100;
-  comb[3].parameters.get('size').value=size.value/100;
-  comb[4].parameters.get('size').value=size.value/100;
-  comb[5].parameters.get('size').value=size.value/100;
-  comb[6].parameters.get('size').value=size.value/100;
-  comb[7].parameters.get('size').value=size.value/100;
-  comb[8].parameters.get('size').value=size.value/100;
-  comb[9].parameters.get('size').value=size.value/100;
-  comb[10].parameters.get('size').value=size.value/100;
-  comb[11].parameters.get('size').value=size.value/100;
-  comb[12].parameters.get('size').value=size.value/100;
-  comb[13].parameters.get('size').value=size.value/100;
-  comb[14].parameters.get('size').value=size.value/100;
-  comb[15].parameters.get('size').value=size.value/100;
+  for(var i= 0; i<16; i++)
+  {
+  comb[i].parameters.get('size').value=size.value/100;
+  }
 }
 
 
@@ -199,12 +183,17 @@ Promise.all([audioCtx.audioWorklet.addModule('../ReverbWorklets.js')]).then(() =
   {
     allpass[i] = new AudioWorkletNode(audioCtx, 'allpass-filter');
   }
+  taps = new AudioWorkletNode(audioCtx, 'multi-tap-delayLine');
+  taps2 = new AudioWorkletNode(audioCtx, 'multi-tap-delayLine');
+
+
   setDelaysL();
   setDelaysR();
   splitter.connect(gainL, 0, 0)
   gainL.connect(dryGainL)
   splitter.connect(gainR, 1, 0)
   gainR.connect(dryGainR)
+  tapGain1.connect(comb[0])
   gainL.connect(comb[0])
     gainL.connect(comb[1])
       gainL.connect(comb[2])
@@ -227,6 +216,7 @@ Promise.all([audioCtx.audioWorklet.addModule('../ReverbWorklets.js')]).then(() =
         allpass[1].connect(allpass[2])
         allpass[2].connect(allpass[3])
         allpass[3].connect(wetGain1)
+        tapGain2.connect(comb[8])
         gainR.connect(comb[8])
           gainR.connect(comb[9])
             gainR.connect(comb[10])
@@ -256,4 +246,10 @@ Promise.all([audioCtx.audioWorklet.addModule('../ReverbWorklets.js')]).then(() =
               outGainL.connect(merger, 0, 0);
               outGainR.connect(merger, 0, 1);
               merger.connect(audioCtx.destination)
+              splitter.connect(gainL, 0, 0)
+              splitter.connect(gainR, 1, 0)
+              gainL.connect(taps);
+              gainR.connect(taps2);
+              taps.connect(tapGain1);
+              taps2.connect(tapGain2);
 })
