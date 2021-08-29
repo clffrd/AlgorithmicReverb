@@ -25,7 +25,7 @@ let  music;
 let scaling = 1
 let splitter = audioCtx.createChannelSplitter(2);
 let merger = audioCtx.createChannelMerger(2)
-demo  = "../assets/audio.mp3"
+demo  = "./assets/audio.mp3"
 
 function defaultfileloader(file)
 {
@@ -174,7 +174,7 @@ function drywetInput()
   dryGainR.gain.value = 1 - reverb.value/100
 }
 
-Promise.all([audioCtx.audioWorklet.addModule('../ReverbWorklets.js')]).then(() => {
+Promise.all([audioCtx.audioWorklet.addModule('./ReverbWorklets.js')]).then(() => {
   for (var i = 0; i<16; i++)
   {
     comb[i] = new AudioWorkletNode(audioCtx, 'lowpass-comb-filter');
